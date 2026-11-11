@@ -33,9 +33,9 @@ static void keyCallback(GLFWwindow *window, int key, int scancode, int action, i
 }
 
 #if defined(__APPLE__)
-Application::Application(const char *title) : Application(title, {2560, 1440, 4, 4, 1}) {}
+Application::Application(const char *title) : Application(title, {1200, 800, 4, 4, 1}) {}
 #else
-Application::Application(const char *title) : Application(title, {1920, 1080, 4, 4, 5}) {}
+Application::Application(const char *title) : Application(title, {1200, 800, 4, 4, 5}) {}
 #endif
 
 Application::Application(const char *title, const ApplicationOptions &options) : options(options) {
