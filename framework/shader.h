@@ -8,7 +8,7 @@
 
 #include <glad/gl.h>
 
-namespace Framework {
+namespace framework {
 
 class Shader {
 public:
@@ -21,11 +21,11 @@ public:
     Shader(Shader &&other) noexcept;
     Shader &operator=(Shader &&other) noexcept;
 
-    void use() const;
+    void Use() const;
 
-    const auto &uniforms() const { return m_uniforms; }
-    const auto &uniformBlocks() const { return m_uniform_blocks; }
-    void setUniform(std::string_view name, const UniformValue &value) const;
+    const auto &GetUniforms() const { return m_uniforms; }
+    const auto &GetUniformBlocks() const { return m_uniform_blocks; }
+    void SetUniform(std::string_view name, const UniformValue &value) const;
 
 private:
     GLuint m_program;
@@ -33,4 +33,4 @@ private:
     std::unordered_map<std::string, UniformBlock> m_uniform_blocks;
 };
 
-} // namespace Framework
+} // namespace framework

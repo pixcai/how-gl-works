@@ -7,7 +7,7 @@
 #include <glad/gl.h>
 #include <glm/glm.hpp>
 
-namespace Framework {
+namespace framework {
 
 using UniformValue = std::variant<int, float, glm::vec2, glm::vec3, glm::vec4, glm::mat3, glm::mat4>;
 
@@ -30,4 +30,4 @@ inline std::vector<Uniform> builtin_uniforms = {
 
 inline std::vector<UniformBlock> builtin_uniform_blocks = {};
 
-} // namespace Framework
+} // namespace framework

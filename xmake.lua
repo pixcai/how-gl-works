@@ -7,7 +7,7 @@ add_requires("imgui", {configs = {opengl3 = true, glfw = true}})
 add_requires("glad", {configs = {profile = "core"}})
 add_requires("glfw", "glm", "stb", "fastgltf", "spdlog")
 
-add_packages("imgui", "glm", "spdlog", {public = true})
+add_packages("imgui", "glad", "glm", "spdlog", {public = true})
 
 add_includedirs("$(projectdir)", {public = true})
 
@@ -21,7 +21,7 @@ end
 target("framework")
     set_kind("static")
     add_files("framework/**.cpp")
-    add_packages("glad", "glfw", "stb", "fastgltf")
+    add_packages("glfw", "stb", "fastgltf")
     add_defines("GLFW_INCLUDE_NONE")
 
 includes("samples/**/xmake.lua")

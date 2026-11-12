@@ -7,14 +7,12 @@
 #include <glad/gl.h>
 #include <glm/gtc/type_ptr.hpp>
 
-namespace Framework {
+namespace framework {
 
-std::string readFile(const std::filesystem::path &path) { return ""; }
-
-GLuint compileShader(GLenum type, const std::filesystem::path &path) {
+GLuint CompileShader(GLenum type, const std::filesystem::path &path) {
     auto shader = glCreateShader(type);
 
-    auto source = readFile(path);
+    std::string source = "";
     auto source_text = source.data();
     auto source_length = static_cast<GLint>(source.size());
 
@@ -34,33 +32,27 @@ GLuint compileShader(GLenum type, const std::filesystem::path &path) {
     return shader;
 }
 
-GLuint linkShaders(GLuint vertex_shader, GLuint fragment_shader) {
-    auto program = glCreateProgram();
+Shader::Shader(const std::filesystem::path &vertex_path, const std::filesystem::path &fragment_path) {
+    auto vertex_shader = CompileShader(GL_VERTEX_SHADER, vertex_path);
+    auto fragment_shader = CompileShader(GL_FRAGMENT_SHADER, fragment_path);
 
-    glAttachShader(program, vertex_shader);
-    glAttachShader(program, fragment_shader);
-    glLinkProgram(program);
+    m_program = glCreateProgram();
+
+    glAttachShader(m_program, vertex_shader);
+    glAttachShader(m_program, fragment_shader);
+    glLinkProgram(m_program);
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
 
     GLint success;
-    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    glGetProgramiv(m_program, GL_LINK_STATUS, &success);
 
     if (success == GL_FALSE) {
         char buffer[512];
-        glGetProgramInfoLog(program, sizeof(buffer), nullptr, buffer);
-        glDeleteProgram(program);
+        glGetProgramInfoLog(m_program, sizeof(buffer), nullptr, buffer);
+        glDeleteProgram(m_program);
         std::terminate();
     }
-
-    return program;
-}
-
-Shader::Shader(const std::filesystem::path &vertex_path, const std::filesystem::path &fragment_path) {
-    auto vertex_shader = compileShader(GL_VERTEX_SHADER, vertex_path);
-    auto fragment_shader = compileShader(GL_FRAGMENT_SHADER, fragment_path);
-
-    m_program = linkShaders(vertex_shader, fragment_shader);
 
     for (const auto &uniform : builtin_uniforms) {
         auto location = glGetUniformLocation(m_program, uniform.name.c_str());
@@ -98,9 +90,9 @@ Shader &Shader::operator=(Shader &&other) noexcept {
     return *this;
 }
 
-void Shader::use() const { glUseProgram(m_program); }
+void Shader::Use() const { glUseProgram(m_program); }
 
-void Shader::setUniform(std::string_view name, const UniformValue &value) const {
+void Shader::SetUniform(std::string_view name, const UniformValue &value) const {
     if (!m_uniforms.contains(std::string(name))) {
         return;
     }
@@ -132,4 +124,4 @@ void Shader::setUniform(std::string_view name, const UniformValue &value) const 
     }
 }
 
-} // namespace Framework
+} // namespace framework
