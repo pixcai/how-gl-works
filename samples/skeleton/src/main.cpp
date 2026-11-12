@@ -1,12 +1,10 @@
-#include "framework/core/framework.h"
+#include "framework/framework.h"
 
-struct Sample : public Framework::Application {
-    using Framework::Application::Application;
-
-    void render() override {}
+struct Sample : public framework::App {
+    void Render() override {}
 };
 
 int main() {
-    Sample("Skeleton").run();
+    framework::Run<Sample>("Skeleton");
     return 0;
 }

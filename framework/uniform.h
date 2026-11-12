@@ -25,9 +25,7 @@ struct UniformBlock {
 };
 
 inline std::vector<Uniform> builtin_uniforms = {
-    {"modelMatrix", "Model Matrix", GL_FLOAT_MAT4},
-    {"viewMatrix", "View Matrix", GL_FLOAT_MAT4},
-    {"projectionMatrix", "Projection Matrix", GL_FLOAT_MAT4},
+    {"u_model", "Model Matrix", GL_FLOAT_MAT4},
 };
 
 inline std::vector<UniformBlock> builtin_uniform_blocks = {};

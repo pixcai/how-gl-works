@@ -1,8 +1,7 @@
-#include "framework/utils/fs.h"
 #include "shader.h"
 #include "uniform.h"
 
-#include <stdexcept>
+#include <exception>
 #include <utility>
 
 #include <glad/gl.h>
@@ -10,12 +9,10 @@
 
 namespace Framework {
 
+std::string readFile(const std::filesystem::path &path) { return ""; }
+
 GLuint compileShader(GLenum type, const std::filesystem::path &path) {
     auto shader = glCreateShader(type);
-
-    if (shader == 0) {
-        throw std::runtime_error("Failed to create shader");
-    }
 
     auto source = readFile(path);
     auto source_text = source.data();
@@ -31,7 +28,7 @@ GLuint compileShader(GLenum type, const std::filesystem::path &path) {
         char buffer[512];
         glGetShaderInfoLog(shader, sizeof(buffer), nullptr, buffer);
         glDeleteShader(shader);
-        throw std::runtime_error(buffer);
+        std::terminate();
     }
 
     return shader;
@@ -39,10 +36,6 @@ GLuint compileShader(GLenum type, const std::filesystem::path &path) {
 
 GLuint linkShaders(GLuint vertex_shader, GLuint fragment_shader) {
     auto program = glCreateProgram();
-
-    if (program == 0) {
-        throw std::runtime_error("Failed to create shader program");
-    }
 
     glAttachShader(program, vertex_shader);
     glAttachShader(program, fragment_shader);
@@ -57,7 +50,7 @@ GLuint linkShaders(GLuint vertex_shader, GLuint fragment_shader) {
         char buffer[512];
         glGetProgramInfoLog(program, sizeof(buffer), nullptr, buffer);
         glDeleteProgram(program);
-        throw std::runtime_error(buffer);
+        std::terminate();
     }
 
     return program;
@@ -86,12 +79,7 @@ Shader::Shader(const std::filesystem::path &vertex_path, const std::filesystem::
     }
 }
 
-Shader::~Shader() {
-    if (m_program) {
-        glDeleteProgram(m_program);
-        m_program = 0;
-    }
-}
+Shader::~Shader() { glDeleteProgram(m_program); }
 
 Shader::Shader(Shader &&other) noexcept
     : m_program(std::exchange(other.m_program, 0)), m_uniforms(std::move(other.m_uniforms)),
