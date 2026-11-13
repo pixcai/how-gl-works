@@ -1,5 +1,6 @@
-#include "framework.h"
 #include "config.h"
+#include "framework.h"
+#include "spdlog/common.h"
 
 #include <exception>
 
@@ -46,6 +47,7 @@ void App::OnCursorCallback(double x, double y) {}
 void App::OnScrollCallback(double dx, double dy) {}
 
 Runner::Runner(std::unique_ptr<App> app, const char *title) : m_app(std::move(app)) {
+    spdlog::set_level(spdlog::level::trace);
     Init(title, WINDOW_WIDTH, WINDOW_HEIGHT);
 }
 

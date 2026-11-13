@@ -9,6 +9,6 @@
 #else
 #    define GLSL_VERSION_MINOR 5
 #    define GLSL_VERSION_STRING "#version 450 core"
-#    define WINDOW_WIDTH 1600
-#    define WINDOW_HEIGHT 900
+#    define WINDOW_WIDTH 1920
+#    define WINDOW_HEIGHT 1080
 #endif

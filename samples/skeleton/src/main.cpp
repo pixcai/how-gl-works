@@ -1,8 +1,16 @@
 #include "framework/framework.h"
+#include "framework/shader.h"
 
 #include <glad/gl.h>
 
-struct Sample : public framework::App {
+using namespace framework;
+
+struct Sample : public App {
+    void Init(Context *context) override {
+        App::Init(context);
+        Shader shader{"vs_main.glsl", "fs_main.glsl"};
+    }
+
     void Render() override {
         glClearColor(0, 0, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -10,6 +18,6 @@ struct Sample : public framework::App {
 };
 
 int main() {
-    framework::Run<Sample>("Skeleton");
+    Run<Sample>("Skeleton");
     return 0;
 }

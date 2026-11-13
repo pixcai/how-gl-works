@@ -1,23 +1,48 @@
+#include "config.h"
 #include "shader.h"
 #include "uniform.h"
 
 #include <exception>
+#include <fstream>
+#include <sstream>
 #include <utility>
 
 #include <glad/gl.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <spdlog/spdlog.h>
+
+#define STB_INCLUDE_IMPLEMENTATION
+#define STB_INCLUDE_LINE_GLSL
+#include <stb_include.h>
 
 namespace framework {
 
+static auto include_root = std::filesystem::path(PROJECT_ROOT) / "assets" / "shaders";
+
 GLuint CompileShader(GLenum type, const std::filesystem::path &path) {
+    auto file_path = include_root / path;
+    std::ifstream file{file_path};
+    if (!file.is_open()) {
+        SPDLOG_CRITICAL("Failed to open file: {}", file_path.string());
+    }
+
+    std::ostringstream source;
+    source << GLSL_VERSION_STRING << '\n';
+    source << file.rdbuf();
+
+    char source_error[512];
+    auto source_text = stb_include_string(source.str().data(), nullptr, include_root.string().data(),
+                                          path.string().data(), source_error);
+
+    if (!source_text) {
+        SPDLOG_CRITICAL(source_error);
+        std::terminate();
+    }
+
     auto shader = glCreateShader(type);
-
-    std::string source = "";
-    auto source_text = source.data();
-    auto source_length = static_cast<GLint>(source.size());
-
-    glShaderSource(shader, 1, &source_text, &source_length);
+    glShaderSource(shader, 1, &source_text, nullptr);
     glCompileShader(shader);
+    std::free(source_text);
 
     GLint success;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
@@ -26,6 +51,7 @@ GLuint CompileShader(GLenum type, const std::filesystem::path &path) {
         char buffer[512];
         glGetShaderInfoLog(shader, sizeof(buffer), nullptr, buffer);
         glDeleteShader(shader);
+        SPDLOG_CRITICAL(buffer);
         std::terminate();
     }
 
@@ -59,6 +85,7 @@ Shader::Shader(const std::filesystem::path &vertex_path, const std::filesystem::
         if (location != -1) {
             m_uniforms[uniform.name] = uniform;
             m_uniforms[uniform.name].location = location;
+            SPDLOG_DEBUG("uniform = {}, location = {}", uniform.name, location);
         }
     }
     for (const auto &uniform_block : builtin_uniform_blocks) {
@@ -67,6 +94,8 @@ Shader::Shader(const std::filesystem::path &vertex_path, const std::filesystem::
             m_uniform_blocks[uniform_block.name] = uniform_block;
             m_uniform_blocks[uniform_block.name].index = index;
             glUniformBlockBinding(m_program, index, uniform_block.binding);
+            SPDLOG_DEBUG("uniform_block = {}, binding={}, index = {}", uniform_block.name, uniform_block.binding,
+                         index);
         }
     }
 }
