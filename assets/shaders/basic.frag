@@ -1,3 +1,5 @@
+#inject
+
 out vec4 out_color;
 
 void main() {

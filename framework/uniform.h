@@ -24,10 +24,10 @@ struct UniformBlock {
     GLuint index{GL_INVALID_INDEX};
 };
 
-inline std::vector<Uniform> builtin_uniforms = {
+inline std::vector<Uniform> g_uniforms = {
     {"u_model", "Model Matrix", GL_FLOAT_MAT4},
 };
 
-inline std::vector<UniformBlock> builtin_uniform_blocks = {};
+inline std::vector<UniformBlock> g_uniform_blocks = {};
 
 } // namespace framework

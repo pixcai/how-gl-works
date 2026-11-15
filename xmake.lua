@@ -12,16 +12,10 @@ add_packages("imgui", "glad", "glm", "spdlog", {public = true})
 add_includedirs("$(projectdir)", {public = true})
 
 add_defines('PROJECT_ROOT="' .. path.unix(os.projectdir()) .. '"', {public = true})
-if is_mode("debug") then
-    add_defines("SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE", {public = true})
-else
-    add_defines("SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO", {public = true})
-end
 
 target("framework")
     set_kind("static")
     add_files("framework/**.cpp")
     add_packages("glfw", "stb", "fastgltf")
-    add_defines("GLFW_INCLUDE_NONE")
 
 includes("samples/**/xmake.lua")

@@ -1,3 +1,5 @@
+#inject
+
 layout(location = 0) in vec3 in_position;
 
 uniform mat4 u_model;
