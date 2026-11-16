@@ -1,7 +1,5 @@
+#include "config.h"
 #include "framework.h"
-#include "framework/config.h"
-#include "framework/context.h"
-#include "framework/window.h"
 
 #include <cstdlib>
 #include <exception>

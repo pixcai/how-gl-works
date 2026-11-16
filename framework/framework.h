@@ -1,7 +1,7 @@
 #pragma once
 
-#include "framework/context.h"
-#include "framework/window.h"
+#include "context.h"
+#include "window.h"
 
 #include <memory>
 #include <string>
@@ -29,7 +29,8 @@ private:
 
 protected:
     std::string title;
-    Context context;
+    Context context{};
+    Scene &scene{context.scene};
     std::unique_ptr<Window> window;
 };
 

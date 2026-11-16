@@ -1,6 +1,6 @@
+#include "config.h"
+#include "context.h"
 #include "window.h"
-#include "framework/config.h"
-#include "framework/context.h"
 
 #include <format>
 #include <stdexcept>
