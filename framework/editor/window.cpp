@@ -1,5 +1,5 @@
-#include "config.h"
-#include "context.h"
+#include "framework/config.h"
+#include "framework/core/context.h"
 #include "window.h"
 
 #include <format>

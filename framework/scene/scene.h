@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ecs.h"
-#include "render_item.h"
+#include "framework/core/ecs.h"
+#include "framework/rendering/renderer/render_item.h"
 
 #include <memory>
 #include <unordered_map>

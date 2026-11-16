@@ -1,8 +1,8 @@
 #pragma once
 
-#include "render_system.h"
-#include "scene.h"
-#include "shader.h"
+#include "framework/rendering/render_system.h"
+#include "framework/rendering/shader/shader.h"
+#include "framework/scene/scene.h"
 
 namespace framework {
 

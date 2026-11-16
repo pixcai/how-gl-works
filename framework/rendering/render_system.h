@@ -1,7 +1,7 @@
 #pragma once
 
-#include "renderer.h"
-#include "scene.h"
+#include "framework/rendering/renderer/renderer.h"
+#include "framework/scene/scene.h"
 
 namespace framework {
 

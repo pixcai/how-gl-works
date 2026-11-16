@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mesh.h"
+#include "framework/geometry/mesh.h"
 
 namespace framework {
 

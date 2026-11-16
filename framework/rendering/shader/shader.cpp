@@ -1,5 +1,5 @@
+#include "framework/config.h"
 #include "shader.h"
-#include "config.h"
 #include "uniform.h"
 
 #include <cstdlib>

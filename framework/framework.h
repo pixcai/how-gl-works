@@ -1,7 +1,7 @@
 #pragma once
 
-#include "context.h"
-#include "window.h"
+#include "framework/core/context.h"
+#include "framework/editor/window.h"
 
 #include <memory>
 #include <string>

@@ -1,5 +1,4 @@
 #include "framework/framework.h"
-#include "framework/mesh.h"
 
 struct Sample : public framework::App {
     void Init() override {
