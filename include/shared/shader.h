@@ -8,8 +8,6 @@
 
 #include <glad/gl.h>
 
-namespace framework {
-
 enum class ShaderFeature : std::uint32_t {
     None     = 0,
     Texture  = 1 << 0,
@@ -70,5 +68,3 @@ private:
     std::unordered_map<std::string, std::vector<ShaderFile>> m_files;
     std::unordered_map<std::string, Shader> m_shaders;
 };
-
-} // namespace framework

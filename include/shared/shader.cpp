@@ -1,4 +1,4 @@
-#include "framework/config.h"
+#include "config.h"
 #include "shader.h"
 #include "uniform.h"
 
@@ -15,16 +15,14 @@
 #define STB_INCLUDE_LINE_GLSL
 #include <stb_include.h>
 
-namespace framework {
-
 GLuint Shader::Compile(std::vector<ShaderFile> &files, std::string inject) {
     GLint success;
     char error[256];
     std::vector<GLuint> shaders;
 
     for (auto &file : files) {
-        auto path   = config::kShaderRoot / file.path;
-        auto source = stb_include_file(path.string().data(), inject.data(), config::kShaderRoot.string().data(), error);
+        auto path   = kShaderRoot / file.path;
+        auto source = stb_include_file(path.string().data(), inject.data(), kShaderRoot.string().data(), error);
         if (!source) {
             throw std::runtime_error(error);
         }
@@ -159,7 +157,7 @@ Shader *ShaderManager::Get(std::string name, ShaderFeature features) {
     if (!m_shaders.contains(key)) {
         std::ostringstream inject;
 
-        inject << config::kGLSLVersionString << '\n';
+        inject << kGLSLVersionString << '\n';
         for (auto &[feature, macro] : g_feature_macros) {
             if ((features & feature) != ShaderFeature::None) {
                 inject << std::format("#define {}", macro) << '\n';
@@ -174,5 +172,3 @@ Shader *ShaderManager::Get(std::string name, ShaderFeature features) {
     }
     return &m_shaders.at(key);
 }
-
-} // namespace framework

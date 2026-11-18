@@ -9,13 +9,14 @@ add_requires("glfw", "glm", "stb", "fastgltf", "spdlog")
 
 add_packages("imgui", "glad", "glm", "spdlog", {public = true})
 
-add_includedirs("$(projectdir)", {public = true})
+add_includedirs("include", {public = true})
 
 add_defines('PROJECT_ROOT="' .. path.unix(os.projectdir()) .. '"', {public = true})
+add_defines("GLFW_INCLUDE_NONE")
 
-target("framework")
+target("shared")
     set_kind("static")
-    add_files("framework/**.cpp")
+    add_files("include/**.cpp")
     add_packages("glfw", "stb", "fastgltf")
 
 includes("samples/**/xmake.lua")
