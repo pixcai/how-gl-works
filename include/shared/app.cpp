@@ -3,12 +3,14 @@
 
 #include <cstdlib>
 #include <exception>
+#include <utility>
 
 #include <GLFW/glfw3.h>
 #include <glad/gl.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <memory>
 #include <spdlog/spdlog.h>
 
 #if defined(__APPLE__)
@@ -24,6 +26,7 @@ static void OnError(int code, const char *description) { spdlog::error("GLFW Err
 App::App(const char *title) : App(title, kWidth, kHeight) {}
 
 App::App(const char *title, int width, int height) {
+    spdlog::set_level(spdlog::level::trace);
     glfwSetErrorCallback(OnError);
     if (!glfwInit()) {
         spdlog::critical("Failed to initialize GLFW");
@@ -55,6 +58,14 @@ App::App(const char *title, int width, int height) {
 
     ImGui_ImplGlfw_InitForOpenGL(m_window, true);
     ImGui_ImplOpenGL3_Init(kGLSLVersionString);
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+
+    m_shader_manager.Set("mesh", {
+                                     {GL_VERTEX_SHADER,   "mesh.vert"},
+                                     {GL_FRAGMENT_SHADER, "mesh.frag"}
+    });
 }
 
 App::~App() {
@@ -69,7 +80,18 @@ App::~App() {
 int App::Run(MainLoop &&main_loop) {
     int exit_code = EXIT_SUCCESS;
 
+    auto M            = std::make_unique<Context>();
+    M->event_manager  = &m_event_manager;
+    M->shader_manager = &m_shader_manager;
+
+    int width, height;
+    glfwGetFramebufferSize(m_window, &width, &height);
+    M->camera_controller.camera.SetPerspective(45.0f, static_cast<float>(width) / height, 0.1f, 100.0f);
+
     try {
+        main_loop.M = std::move(M);
+        main_loop.Init();
+
         while (!glfwWindowShouldClose(m_window)) {
             glfwPollEvents();
 
@@ -78,7 +100,7 @@ int App::Run(MainLoop &&main_loop) {
             ImGui::NewFrame();
 
             glClearColor(0.1451f, 0.1647f, 0.1961f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             main_loop.Render();
             ImGui::Render();

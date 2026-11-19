@@ -1,36 +1,37 @@
 #pragma once
 
-#include "uniform.h"
-
-#include <filesystem>
 #include <string>
 #include <unordered_map>
+#include <variant>
+#include <vector>
 
 #include <glad/gl.h>
+#include <glm/glm.hpp>
 
-enum class ShaderFeature : std::uint32_t {
-    None     = 0,
-    Texture  = 1 << 0,
-    Lighting = 1 << 1,
-};
+using UniformValue = std::variant<int, float, glm::vec2, glm::vec3, glm::vec4, glm::mat3, glm::mat4>;
 
-constexpr ShaderFeature operator|(ShaderFeature lhs, ShaderFeature rhs) {
-    return static_cast<ShaderFeature>(static_cast<std::uint32_t>(lhs) | static_cast<std::uint32_t>(rhs));
-}
-
-constexpr ShaderFeature operator&(ShaderFeature lhs, ShaderFeature rhs) {
-    return static_cast<ShaderFeature>(static_cast<std::uint32_t>(lhs) & static_cast<std::uint32_t>(rhs));
-}
-
-struct ShaderFile {
+struct Uniform {
+    std::string name;
+    std::string display_name;
     GLenum type;
-    std::filesystem::path path;
+    GLint location{-1};
 };
+
+struct UniformBlock {
+    std::string name;
+    GLuint binding;
+    GLuint index{GL_INVALID_INDEX};
+};
+
+inline std::vector<Uniform> g_uniforms = {
+    {"u_model",      "Model Matrix",      GL_FLOAT_MAT4},
+    {"u_view",       "View Matrix",       GL_FLOAT_MAT4},
+    {"u_projection", "Projection Matrix", GL_FLOAT_MAT4},
+};
+
+inline std::vector<UniformBlock> g_uniform_blocks = {};
 
 class Shader {
-public:
-    static GLuint Compile(std::vector<ShaderFile> &files, std::string inject);
-
 public:
     Shader(GLuint program);
     ~Shader();
@@ -44,27 +45,12 @@ public:
     void Use() const;
 
     const std::unordered_map<std::string, Uniform> &GetUniforms() const { return m_uniforms; }
-    const std::unordered_map<std::string, UniformBlock> &GetUniformBlocks() const { return m_uniform_blocks; }
     void SetUniform(std::string name, const UniformValue &value) const;
+
+    const std::unordered_map<std::string, UniformBlock> &GetUniformBlocks() const { return m_uniform_blocks; }
 
 private:
     GLuint m_program;
     std::unordered_map<std::string, Uniform> m_uniforms;
     std::unordered_map<std::string, UniformBlock> m_uniform_blocks;
-};
-
-class ShaderManager {
-public:
-    ShaderManager()  = default;
-    ~ShaderManager() = default;
-
-    ShaderManager(const ShaderManager &other)            = delete;
-    ShaderManager &operator=(const ShaderManager &other) = delete;
-
-    void Add(std::string name, std::vector<ShaderFile> &&files);
-    Shader *Get(std::string name, ShaderFeature features = ShaderFeature::None);
-
-private:
-    std::unordered_map<std::string, std::vector<ShaderFile>> m_files;
-    std::unordered_map<std::string, Shader> m_shaders;
 };
