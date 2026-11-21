@@ -8,6 +8,12 @@
 #include <unordered_map>
 #include <vector>
 
+enum class ObjectFlags {
+    None,
+    Added,
+    Removed,
+};
+
 struct Object : public std::enable_shared_from_this<Object> {
     struct Stats {
         std::size_t next_id;
@@ -19,6 +25,7 @@ struct Object : public std::enable_shared_from_this<Object> {
 
     std::size_t id;
     std::string name;
+    ObjectFlags flags = ObjectFlags::None;
     std::shared_ptr<Object> parent;
     std::unordered_map<std::size_t, std::shared_ptr<Object>> children;
     std::unordered_map<std::type_index, std::any> components;
@@ -35,7 +42,7 @@ struct Object : public std::enable_shared_from_this<Object> {
 
     template <typename T, typename... Args>
     T &Add(Args &&...args) {
-        components.try_emplace(typeid(T), std::forward<Args>(args)...);
+        components.try_emplace(typeid(T), T(std::forward<Args>(args)...));
         return Get<T>();
     }
 
@@ -50,7 +57,12 @@ struct Object : public std::enable_shared_from_this<Object> {
     }
 
     template <typename T>
-    T &Get() const {
+    T &Get() {
+        return std::any_cast<T &>(components.at(typeid(T)));
+    }
+
+    template <typename T>
+    const T &Get() const {
         return std::any_cast<T &>(components.at(typeid(T)));
     }
 };
@@ -61,6 +73,13 @@ struct Scene {
     Scene();
     ~Scene() = default;
 
+    std::shared_ptr<Object> Get(std::size_t id);
+    void Add(std::shared_ptr<Object> object);
+    void Remove(std::size_t id);
+
     void Traverse(const std::shared_ptr<Object> &object,
                   const std::function<void(std::shared_ptr<Object> &child)> &callback);
+
+private:
+    std::unordered_map<std::size_t, std::shared_ptr<Object>> m_objects;
 };

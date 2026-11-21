@@ -2,12 +2,14 @@
 #include "shared/gpu_buffer.h"
 #include "shared/gpu_object.h"
 #include "shared/mesh.h"
+#include "shared/scene.h"
 
 #include <memory>
 #include <vector>
 
 #include <glad/gl.h>
 #include <glm/glm.hpp>
+#include <spdlog/spdlog.h>
 
 // clang-format off
 std::vector<Vertex> vertices = {
@@ -61,20 +63,35 @@ std::vector<GLuint> indices = {
 
 struct Sample : public MainLoop {
     Shader *shader;
-    GPUMesh gpu_mesh;
-    std::unique_ptr<GPUDrawBuffer> buffer;
+    std::vector<GPUMesh> gpu_meshes;
 
     void Init() override {
-        shader     = M->shader_manager->Get("mesh");
-        buffer     = std::make_unique<GPUDrawBuffer>(g_mesh_layout);
-        auto block = buffer->vertex_buffer.Allocate(vertices.size() * sizeof(Vertex));
-        buffer->vertex_buffer.Upload(block.id, vertices.data());
-        gpu_mesh.vertex_block = block;
-        gpu_mesh.vertex_count = vertices.size();
-        block                 = buffer->index_buffer.Allocate(indices.size() * sizeof(GLuint));
-        buffer->index_buffer.Upload(block.id, indices.data());
-        gpu_mesh.index_block = block;
-        gpu_mesh.index_count = indices.size();
+        shader = M->shader_manager->Get("mesh");
+
+        auto cube    = std::make_shared<Object>();
+        auto mesh_id = M->resource_manager.AddMesh({vertices, indices});
+        cube->Add<MeshComponent>(mesh_id);
+
+        M->scene.Add(cube);
+        M->scene.Traverse(M->scene.root, [&](std::shared_ptr<Object> &object) {
+            if (object->flags == ObjectFlags::Added) {
+                if (object->Has<MeshComponent>()) {
+                    auto &component = object->Get<MeshComponent>();
+                    auto &mesh      = M->resource_manager.meshes.at(component.mesh_id);
+                    GPUMesh gpu_mesh;
+                    auto block = M->draw_buffer->vertex_buffer.Allocate(mesh.vertices.size() * sizeof(Vertex));
+                    M->draw_buffer->vertex_buffer.Upload(block.id, mesh.vertices.data());
+                    gpu_mesh.vertex_block = block;
+                    gpu_mesh.vertex_count = vertices.size();
+                    block                 = M->draw_buffer->index_buffer.Allocate(mesh.indices.size() * sizeof(GLuint));
+                    M->draw_buffer->index_buffer.Upload(block.id, mesh.indices.data());
+                    gpu_mesh.index_block = block;
+                    gpu_mesh.index_count = indices.size();
+                    gpu_meshes.emplace_back(gpu_mesh);
+                }
+            }
+            object->flags = ObjectFlags::None;
+        });
     }
 
     void Render() override {
@@ -82,11 +99,11 @@ struct Sample : public MainLoop {
         shader->SetUniform("u_model", glm::mat4{1.0f});
         shader->SetUniform("u_view", M->camera_controller.camera.GetViewMatrix());
         shader->SetUniform("u_projection", M->camera_controller.camera.GetProjectionMatrix());
-        buffer->BeginFrame();
-        buffer->Bind();
-        glDrawElements(GL_TRIANGLES, gpu_mesh.index_count, GL_UNSIGNED_INT,
-                       reinterpret_cast<void *>(gpu_mesh.index_block.offset));
-        buffer->EndFrame();
+        M->draw_buffer->Bind();
+        for (auto &gpu_mesh : gpu_meshes) {
+            glDrawElements(GL_TRIANGLES, gpu_mesh.index_count, GL_UNSIGNED_INT,
+                           reinterpret_cast<void *>(gpu_mesh.index_block.offset));
+        }
     }
 };
 

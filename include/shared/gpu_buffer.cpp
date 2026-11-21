@@ -15,6 +15,7 @@ GPUBufferObject::GPUBufferObject(GLenum target, GLenum usage)
 
 GPUBufferObject::~GPUBufferObject() {
     if (m_id != 0) {
+        spdlog::info("~GPUBufferObject");
         glDeleteBuffers(1, &m_id);
         m_id = 0;
     }
@@ -67,6 +68,7 @@ GPUVertexArrayObject::GPUVertexArrayObject() { glGenVertexArrays(1, &m_id); }
 
 GPUVertexArrayObject::~GPUVertexArrayObject() {
     if (m_id != 0) {
+        spdlog::info("~GPUVertexArrayObject");
         glDeleteVertexArrays(1, &m_id);
         m_id = 0;
     }
@@ -102,6 +104,7 @@ GPUBuffer::GPUBuffer(GLenum target, GLuint capacity, GLenum usage)
 }
 
 GPUBuffer::~GPUBuffer() {
+    spdlog::info("~GPUBuffer");
     if (m_fence) {
         glDeleteSync(m_fence);
         m_fence = nullptr;

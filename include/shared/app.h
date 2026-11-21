@@ -2,6 +2,8 @@
 
 #include "camera_controller.h"
 #include "event_manager.h"
+#include "gpu_buffer.h"
+#include "resource_manager.h"
 #include "scene.h"
 #include "shader_manager.h"
 
@@ -11,9 +13,11 @@
 
 struct Context {
     Scene scene;
+    std::unique_ptr<GPUDrawBuffer> draw_buffer;
     CameraController camera_controller;
-    EventManager *event_manager;
-    ShaderManager *shader_manager;
+    EventManager *event_manager{nullptr};
+    ShaderManager *shader_manager{nullptr};
+    ResourceManager resource_manager;
 };
 
 struct MainLoop {

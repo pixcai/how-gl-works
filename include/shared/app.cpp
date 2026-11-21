@@ -1,5 +1,7 @@
 #include "app.h"
 #include "config.h"
+#include "gpu_buffer.h"
+#include "gpu_object.h"
 
 #include <cstdlib>
 #include <exception>
@@ -23,7 +25,8 @@ static constexpr int kHeight = 1080;
 
 static void OnError(int code, const char *description) { spdlog::error("GLFW Error({}): {}", code, description); }
 
-App::App(const char *title) : App(title, kWidth, kHeight) {}
+App::App(const char *title)
+    : App(title, kWidth, kHeight) {}
 
 App::App(const char *title, int width, int height) {
     spdlog::set_level(spdlog::level::trace);
@@ -83,6 +86,7 @@ int App::Run(MainLoop &&main_loop) {
     auto M            = std::make_unique<Context>();
     M->event_manager  = &m_event_manager;
     M->shader_manager = &m_shader_manager;
+    M->draw_buffer    = std::make_unique<GPUDrawBuffer>(g_mesh_layout);
 
     int width, height;
     glfwGetFramebufferSize(m_window, &width, &height);
@@ -102,7 +106,10 @@ int App::Run(MainLoop &&main_loop) {
             glClearColor(0.1451f, 0.1647f, 0.1961f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+            main_loop.M->draw_buffer->BeginFrame();
             main_loop.Render();
+            main_loop.M->draw_buffer->EndFrame();
+
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
             glfwSwapBuffers(m_window);

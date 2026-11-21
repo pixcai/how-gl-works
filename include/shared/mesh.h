@@ -15,3 +15,9 @@ struct Mesh {
     std::vector<Vertex> vertices;
     std::vector<GLuint> indices;
 };
+
+struct MeshComponent {
+    GLuint mesh_id;
+
+    bool is_topology_dirty{true};
+};
