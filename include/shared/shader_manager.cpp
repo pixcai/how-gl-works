@@ -1,5 +1,5 @@
-#include "shader_manager.h"
 #include "config.h"
+#include "shader_manager.h"
 
 #include <cstdlib>
 #include <exception>

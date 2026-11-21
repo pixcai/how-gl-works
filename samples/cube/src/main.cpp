@@ -1,6 +1,9 @@
 #include "shared/app.h"
-#include "shared/gpu_mesh.h"
+#include "shared/gpu_buffer.h"
+#include "shared/gpu_object.h"
+#include "shared/mesh.h"
 
+#include <memory>
 #include <vector>
 
 #include <glad/gl.h>
@@ -59,10 +62,19 @@ std::vector<GLuint> indices = {
 struct Sample : public MainLoop {
     Shader *shader;
     GPUMesh gpu_mesh;
+    std::unique_ptr<GPUDrawBuffer> buffer;
 
     void Init() override {
-        shader = M->shader_manager->Get("mesh");
-        gpu_mesh.Upload({vertices, indices});
+        shader     = M->shader_manager->Get("mesh");
+        buffer     = std::make_unique<GPUDrawBuffer>(g_mesh_layout);
+        auto block = buffer->vertex_buffer.Allocate(vertices.size() * sizeof(Vertex));
+        buffer->vertex_buffer.Upload(block.id, vertices.data());
+        gpu_mesh.vertex_block = block;
+        gpu_mesh.vertex_count = vertices.size();
+        block                 = buffer->index_buffer.Allocate(indices.size() * sizeof(GLuint));
+        buffer->index_buffer.Upload(block.id, indices.data());
+        gpu_mesh.index_block = block;
+        gpu_mesh.index_count = indices.size();
     }
 
     void Render() override {
@@ -70,12 +82,11 @@ struct Sample : public MainLoop {
         shader->SetUniform("u_model", glm::mat4{1.0f});
         shader->SetUniform("u_view", M->camera_controller.camera.GetViewMatrix());
         shader->SetUniform("u_projection", M->camera_controller.camera.GetProjectionMatrix());
-        gpu_mesh.Bind();
-        if (gpu_mesh.IsIndexed()) {
-            glDrawElements(GL_TRIANGLES, gpu_mesh.GetIndexCount(), GL_UNSIGNED_INT, nullptr);
-        } else {
-            glDrawArrays(GL_TRIANGLES, 0, gpu_mesh.GetVertexCount());
-        }
+        buffer->BeginFrame();
+        buffer->Bind();
+        glDrawElements(GL_TRIANGLES, gpu_mesh.index_count, GL_UNSIGNED_INT,
+                       reinterpret_cast<void *>(gpu_mesh.index_block.offset));
+        buffer->EndFrame();
     }
 };
 

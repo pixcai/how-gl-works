@@ -63,6 +63,4 @@ struct Scene {
 
     void Traverse(const std::shared_ptr<Object> &object,
                   const std::function<void(std::shared_ptr<Object> &child)> &callback);
-
-private:
 };
