@@ -69,7 +69,7 @@ struct Sample : public MainLoop {
         shader = M->shader_manager->Get("mesh");
 
         auto cube    = std::make_shared<Object>();
-        auto mesh_id = M->resource_manager.AddMesh({vertices, indices});
+        auto mesh_id = M->resource_manager.Create<Mesh>(vertices, indices);
         cube->Add<MeshComponent>(mesh_id);
 
         M->scene.Add(cube);
@@ -77,14 +77,14 @@ struct Sample : public MainLoop {
             if (object->flags == ObjectFlags::Added) {
                 if (object->Has<MeshComponent>()) {
                     auto &component = object->Get<MeshComponent>();
-                    auto &mesh      = M->resource_manager.meshes.at(component.mesh_id);
+                    auto mesh       = M->resource_manager.Acquire<Mesh>(component.mesh_id);
                     GPUMesh gpu_mesh;
-                    auto block = M->draw_buffer->vertex_buffer.Allocate(mesh.vertices.size() * sizeof(Vertex));
-                    M->draw_buffer->vertex_buffer.Upload(block.id, mesh.vertices.data());
+                    auto block = M->draw_buffer->vertex_buffer.Allocate(mesh->vertices.size() * sizeof(Vertex));
+                    M->draw_buffer->vertex_buffer.Upload(block.id, mesh->vertices.data());
                     gpu_mesh.vertex_block = block;
                     gpu_mesh.vertex_count = vertices.size();
-                    block                 = M->draw_buffer->index_buffer.Allocate(mesh.indices.size() * sizeof(GLuint));
-                    M->draw_buffer->index_buffer.Upload(block.id, mesh.indices.data());
+                    block = M->draw_buffer->index_buffer.Allocate(mesh->indices.size() * sizeof(GLuint));
+                    M->draw_buffer->index_buffer.Upload(block.id, mesh->indices.data());
                     gpu_mesh.index_block = block;
                     gpu_mesh.index_count = indices.size();
                     gpu_meshes.emplace_back(gpu_mesh);

@@ -11,7 +11,8 @@ struct EventState {
 
 struct EventConnection {
     EventConnection(const std::shared_ptr<EventState> &state, std::function<void()> disconnect_callback)
-        : m_state(state), m_disconnect_callback(std::move(disconnect_callback)) {}
+        : m_state(state)
+        , m_disconnect_callback(std::move(disconnect_callback)) {}
 
     void Disconnect() const {
         if (auto state = m_state.lock()) {
@@ -31,32 +32,33 @@ struct IEventListener {
     virtual ~IEventListener() = default;
 };
 
-template <typename EventT>
+template <typename T>
 struct EventListener : public IEventListener {
     std::shared_ptr<EventState> state;
-    std::function<void(const EventT &event)> callback;
+    std::function<void(const T &event)> callback;
 
-    EventListener(const std::shared_ptr<EventState> &state, std::function<void(const EventT &event)> callback)
-        : state(state), callback(std::move(callback)) {}
+    EventListener(std::shared_ptr<EventState> state, std::function<void(const T &event)> callback)
+        : state(std::move(state))
+        , callback(std::move(callback)) {}
 };
 
 class EventManager {
 public:
-    template <typename EventT>
-    EventConnection AddListener(std::function<void(const EventT &event)> callback) {
+    template <typename T>
+    EventConnection Subscribe(std::function<void(const T &event)> callback) {
         auto state    = std::make_shared<EventState>();
-        auto listener = std::make_shared<EventListener<EventT>>(state, std::move(callback));
+        auto listener = std::make_shared<EventListener<T>>(state, std::move(callback));
 
-        m_listeners.emplace(typeid(EventT), listener);
-        return {state, [this, listener] { RemoveListener<EventT>(listener); }};
+        m_listeners.emplace(typeid(T), listener);
+        return {state, [this, listener] { RemoveListener<T>(listener); }};
     }
 
-    template <typename EventT>
-    void DispatchEvent(const EventT &event) {
-        auto [first, last] = m_listeners.equal_range(typeid(EventT));
+    template <typename T>
+    void Dispatch(const T &event) {
+        auto [first, last] = m_listeners.equal_range(typeid(T));
 
         for (auto it = first; it != last; ++it) {
-            auto listener = static_cast<EventListener<EventT> *>(it->second.get());
+            auto listener = static_cast<EventListener<T> *>(it->second.get());
 
             if (listener->state->connected) {
                 listener->callback(event);
@@ -65,9 +67,9 @@ public:
     }
 
 private:
-    template <typename EventT>
+    template <typename T>
     void RemoveListener(const std::shared_ptr<IEventListener> &listener) {
-        auto [first, last] = m_listeners.equal_range(typeid(EventT));
+        auto [first, last] = m_listeners.equal_range(typeid(T));
 
         for (auto it = first; it != last; ++it) {
             if (it->second == listener) {

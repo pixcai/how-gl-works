@@ -1,5 +1,7 @@
 #pragma once
 
+#include "id.h"
+
 #include <vector>
 
 #include <glad/gl.h>
@@ -16,8 +18,9 @@ struct Mesh {
     std::vector<GLuint> indices;
 };
 
-struct MeshComponent {
-    GLuint mesh_id;
+using MeshID = ID<Mesh>;
 
+struct MeshComponent {
+    MeshID mesh_id;
     bool is_topology_dirty{true};
 };

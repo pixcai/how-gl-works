@@ -96,12 +96,22 @@ void Scene::Remove(std::size_t id) {
     }
 }
 
-void Scene::Traverse(const std::shared_ptr<Object> &object,
+void Scene::Traverse(std::shared_ptr<Object> &object,
                      const std::function<void(std::shared_ptr<Object> &child)> &callback) {
     for (auto &[_, child] : object->children) {
         callback(child);
     }
     for (auto &[_, child] : object->children) {
+        Traverse(child, callback);
+    }
+}
+
+void Scene::Traverse(const std::shared_ptr<Object> &object,
+                     const std::function<void(const std::shared_ptr<Object> &child)> &callback) const {
+    for (const auto &[_, child] : object->children) {
+        callback(child);
+    }
+    for (const auto &[_, child] : object->children) {
         Traverse(child, callback);
     }
 }

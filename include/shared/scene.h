@@ -77,8 +77,10 @@ struct Scene {
     void Add(std::shared_ptr<Object> object);
     void Remove(std::size_t id);
 
+    void Traverse(std::shared_ptr<Object> &object, const std::function<void(std::shared_ptr<Object> &child)> &callback);
+
     void Traverse(const std::shared_ptr<Object> &object,
-                  const std::function<void(std::shared_ptr<Object> &child)> &callback);
+                  const std::function<void(const std::shared_ptr<Object> &child)> &callback) const;
 
 private:
     std::unordered_map<std::size_t, std::shared_ptr<Object>> m_objects;
